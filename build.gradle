@@ -1,0 +1,51 @@
+buildscript {
+    repositories {
+        maven { url 'http://jcenter.bintray.com' }
+    }
+    dependencies {
+        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:0.3'
+    }
+}
+
+apply plugin: 'bintray'
+apply plugin: 'maven-publish'
+apply plugin: 'java'
+
+group = "app-ui"
+version = "0.0.1"
+
+
+// used by bintray
+publishing {
+  publications {
+    mavenAll(MavenPublication) {
+      if (plugins.hasPlugin('java')) {
+        from components.java
+      }
+    }
+  }
+} // publishing
+
+bintray {
+  user = project.hasProperty('bintrayUser') ? project.bintrayUser : ''
+  key = project.hasProperty('bintrayKey') ? project.bintrayKey : ''
+
+    publications = ['mavenAll'] // When uploading Maven-based publication files
+    pkg {
+        repo = 'maven'
+        //userOrg = 'myorg' // an optional organization name when the repo belongs to one of the user's orgs
+        name = 'app-ui'
+        desc = 'Sample AngularJS application (UI)'
+        licenses = ['Apache-2.0']
+        labels = ['angular', 'frontend']
+    }
+    //dryRun = true // whether to run this as dry-run, without deploying
+}
+
+task webjar(type: Jar, dependsOn:"jar"){
+  from(fileTree("dist")){
+    into "META-INF/resources"
+  }
+}
+
+bintrayUpload.dependsOn webjar
